@@ -424,13 +424,13 @@ export default function App() {
     <div className="h-screen w-full flex overflow-hidden text-[#2D2C2A] bg-[#F5F2EB]">
       
       {/* SIDEBAR */}
-      <div className={`${showMobileSidebar ? 'flex w-full md:w-80' : 'hidden md:flex md:w-80'} shrink-0 border-r-2 border-black/10 flex-col relative z-20 shadow-[4px_0_15px_rgba(0,0,0,0.02)] bg-[#F5F2EB]`}>
-        
+      <div className={`${showMobileSidebar ? 'flex w-full md:w-80' : 'hidden md:flex md:w-80'} shrink-0 border-r-0 md:border-r-2 border-black/10 flex-col relative z-20 shadow-none md:shadow-[4px_0_15px_rgba(0,0,0,0.02)] bg-[#F5F2EB]`}>
+
         {/* Header */}
-        <div className="p-6 pb-4 sketch-divider">
-          <h1 className="text-3xl font-bold tracking-widest mb-4">SCRIBE CHAT</h1>
+        <div className="p-4 md:p-6 pb-3 md:pb-4 sketch-divider">
+          <h1 className="text-xl md:text-3xl font-bold tracking-widest mb-2 md:mb-4">SCRIBE CHAT</h1>
           <div className="relative w-full">
-            <input 
+            <input
               className="w-full bg-transparent p-2 pb-3 text-sm text-[#2D2C2A] outline-none placeholder-gray-500/70"
               placeholder="Search contacts..."
               value={searchQuery}
@@ -446,16 +446,16 @@ export default function App() {
         {/* Contacts */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {/* Static call history button mimicking the mockup */}
-          <div 
+          <div
             onClick={() => { setActiveView('history'); setChatUser(null); setShowMobileSidebar(false); }}
-            className={`flex items-center gap-4 p-4 sketch-divider cursor-pointer transition-colors hover:bg-black/5 ${activeView === 'history' && !isCallActive ? 'bg-black/5' : ''}`}
+            className={`flex items-center gap-3 md:gap-4 p-3 md:p-4 sketch-divider cursor-pointer transition-colors hover:bg-black/5 ${activeView === 'history' && !isCallActive ? 'bg-black/5' : ''}`}
           >
-            <div className="w-12 h-12 sketch-circle flex items-center justify-center bg-[#F5F2EB]">
-              <FiClock className="w-5 h-5 text-[#2D2C2A]" />
+            <div className="w-10 h-10 md:w-12 md:h-12 sketch-circle flex items-center justify-center bg-[#F5F2EB]">
+              <FiClock className="w-4 h-4 md:w-5 md:h-5 text-[#2D2C2A]" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold">Call Logs</h3>
-              <p className="text-sm text-black/50">Recent connections</p>
+              <h3 className="font-bold text-sm md:text-base">Call Logs</h3>
+              <p className="text-xs md:text-sm text-black/50">Recent connections</p>
             </div>
           </div>
 
@@ -463,47 +463,47 @@ export default function App() {
             .filter(u => u.id !== (user?.id || user?._id))
             .filter(u => !searchQuery.trim() || u.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
             .map(u => (
-            <div 
+            <div
               key={u.id}
               onClick={() => { setActiveView('chat'); setChatUser(u); setShowMobileSidebar(false); }}
-              className={`flex items-center gap-4 p-4 sketch-divider cursor-pointer transition-colors hover:bg-black/5 ${(activeView === 'chat' || isCallActive) && chatUser?.id === u.id ? 'bg-black/5' : ''}`}
+              className={`flex items-center gap-3 md:gap-4 p-3 md:p-4 sketch-divider cursor-pointer transition-colors hover:bg-black/5 ${(activeView === 'chat' || isCallActive) && chatUser?.id === u.id ? 'bg-black/5' : ''}`}
             >
               <div className="relative">
-                <div className="w-12 h-12 sketch-circle flex items-center justify-center bg-[#F5F2EB] text-xl font-bold">
+                <div className="w-10 h-10 md:w-12 md:h-12 sketch-circle flex items-center justify-center bg-[#F5F2EB] text-base md:text-xl font-bold">
                   {u.name.charAt(0).toUpperCase()}
                 </div>
                 {u.status === 'online' && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-black rounded-full border-2 border-[#F5F2EB]"></div>
+                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-black rounded-full border-1.5 md:border-2 border-[#F5F2EB]"></div>
                 )}
               </div>
               <div className="flex-1 overflow-hidden">
-                <h3 className="font-bold truncate">{u.name}</h3>
-                <p className="text-sm text-black/50 truncate">{getLastMessage(u.id)}</p>
+                <h3 className="font-bold text-sm md:text-base truncate">{u.name}</h3>
+                <p className="text-xs md:text-sm text-black/50 truncate">{getLastMessage(u.id)}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* Footer: Your Journal */}
-        <div className="p-4 sketch-divider border-t-2 border-black/10 bg-black/5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sketch-circle bg-black text-white flex items-center justify-center font-bold">
+        <div className="p-3 md:p-4 sketch-divider border-t-2 border-black/10 bg-black/5 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 sketch-circle bg-black text-white flex items-center justify-center text-sm md:text-base font-bold">
               {(user?.username || user?.name || user?.email || 'U').charAt(0).toUpperCase()}
             </div>
-            <span className="font-bold">Your Journal</span>
+            <span className="font-bold text-sm md:text-base">Your Journal</span>
           </div>
-          <button 
+          <button
             onClick={() => { setActiveView(activeView === 'settings' ? 'history' : 'settings'); setShowMobileSidebar(false); }}
-            className="w-8 h-8 sketch-circle flex items-center justify-center hover:bg-black/10 transition-colors"
+            className="w-7 h-7 md:w-8 md:h-8 sketch-circle flex items-center justify-center hover:bg-black/10 transition-colors"
             title="Settings"
           >
-            <FiSettings className="w-4 h-4 text-[#2D2C2A]" />
+            <FiSettings className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#2D2C2A]" />
           </button>
         </div>
       </div>
 
       {/* MAIN VIEW */}
-      <div className={`${!showMobileSidebar ? 'flex' : 'hidden md:flex'} flex-1 flex-col relative z-10 overflow-hidden bg-white/30`}>
+      <div className={`${!showMobileSidebar ? 'flex' : 'hidden md:flex'} flex-1 flex-col relative z-10 overflow-hidden bg-white/30 min-h-screen md:min-h-0 h-full`}>
         {isCallActive ? (
           <CallScreen
             incomingCall={incomingCall}

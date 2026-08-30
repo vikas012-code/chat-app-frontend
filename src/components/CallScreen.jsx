@@ -99,15 +99,15 @@ export default function CallScreen({ incomingCall, inCall, isLoading, callError,
 
   // --- ACTIVE / OUTGOING CALL UI ---
   const activeName = targetUser?.name || targetUser?.username || incomingCall?.name || incomingCall?.from || 'Unknown User';
-  
-  const isVideo = (localStream && localStream.getVideoTracks().length > 0) || 
+
+  const isVideo = (localStream && localStream.getVideoTracks().length > 0) ||
                   (remoteStream && remoteStream.getVideoTracks().length > 0) ||
                   incomingCall?.type === 'video';
-  
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#E6E1D6] text-[#2D2C2A] font-['Kalam'] relative z-30 p-4 pb-2">
-      
-      <div className="flex-1 relative flex flex-col items-center justify-center m-2 shadow-sm bg-[#E6E1D6]"
+    <div className="flex-1 flex flex-col min-h-screen md:min-h-0 md:h-full bg-[#E6E1D6] text-[#2D2C2A] font-['Kalam'] relative z-30 p-3 md:p-4 pb-2">
+
+      <div className="flex-1 relative flex flex-col items-center justify-center m-2 shadow-sm bg-[#E6E1D6] min-h-[400px] md:min-h-0"
            style={{ border: '1.5px solid #2D2C2A', borderRadius: '4px 3px 6px 2px' }}>
         
         <svg className="absolute top-2 left-2 text-[#2D2C2A] w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
