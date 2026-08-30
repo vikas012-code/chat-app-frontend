@@ -22,7 +22,7 @@ const SketchyBubble = ({ children, isMe }) => (
   </div>
 );
 
-export default function ChatView({ chatUser, user, messages, messageInput, setMessageInput, sendMessage, messagesEndRef, formatTime, startCall, onBack }) {
+export default function ChatView({ chatUser, user, messages, messageInput, setMessageInput, sendMessage, messagesEndRef, formatTime, startCall, onBack, onOpenDetails }) {
   const currentUserId = user?.id || user?._id;
   const msgs = messages.filter(m => (m.from === currentUserId && m.to === chatUser.id) || (m.from === chatUser.id && m.to === currentUserId));
 
@@ -64,8 +64,12 @@ export default function ChatView({ chatUser, user, messages, messageInput, setMe
                   style={{ border: '1.5px solid #2D2C2A', borderRadius: "50% 60% 40% 50% / 50% 40% 60% 40%" }}>
             <VideoIcon />
           </button>
-          <button className="hidden md:flex w-12 h-12 items-center justify-center hover:bg-black/10 transition-colors"
-                  style={{ border: '1.5px solid #2D2C2A', borderRadius: "40% 50% 60% 50% / 50% 60% 40% 50%" }}>
+          <button
+            onClick={() => onOpenDetails && onOpenDetails(chatUser)}
+            className="flex w-12 h-12 md:w-12 md:h-12 items-center justify-center hover:bg-black/10 transition-colors md:flex"
+            style={{ border: '1.5px solid #2D2C2A', borderRadius: "40% 50% 60% 50% / 50% 60% 40% 50%" }}
+            title="Profile"
+          >
             <MenuIcon />
           </button>
         </div>

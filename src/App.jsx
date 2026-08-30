@@ -5,6 +5,7 @@ import LoginScreen from './components/LoginScreen';
 import SettingsView from './components/SettingsView';
 import HistoryView from './components/HistoryView';
 import ChatView from './components/ChatView';
+import ContactDetails from './components/ContactDetails';
 import CallScreen from './components/CallScreen';
 
 const apiUrl = import.meta.env.VITE_API_URL || `https://${window.location.hostname}:5000`;
@@ -29,6 +30,7 @@ export default function App() {
   
   const [activeView, setActiveView] = useState('history'); // 'history', 'chat', 'settings'
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
+  const [contactDetailsUser, setContactDetailsUser] = useState(null); // user object for ContactDetails
 
   const pcRef = useRef(null);
   const remoteIdRef = useRef(null);
@@ -502,13 +504,13 @@ export default function App() {
 
       {/* MAIN VIEW */}
       <div className={`${!showMobileSidebar ? 'flex' : 'hidden md:flex'} flex-1 flex-col relative z-10 overflow-hidden bg-white/30`}>
-        {!isCallActive ? (
-          <CallScreen 
-            incomingCall={incomingCall} 
-            inCall={inCall} 
-            isLoading={isLoading} 
+        {isCallActive ? (
+          <CallScreen
+            incomingCall={incomingCall}
+            inCall={inCall}
+            isLoading={isLoading}
             callError={callError}
-            remoteStream={remoteStream} 
+            remoteStream={remoteStream}
             localStream={localStream}
             targetUser={incomingCall ? incomingCall : (chatUser ? chatUser : { name: remoteIdRef.current })}
             acceptCall={acceptCall}
@@ -523,18 +525,36 @@ export default function App() {
         ) : activeView === 'settings' ? (
           <SettingsView user={user} onBack={() => setShowMobileSidebar(true)} onUpdateUser={handleUpdateUser} onLogout={handleLogout} />
         ) : activeView === 'chat' && chatUser ? (
-          <ChatView 
-            chatUser={chatUser}
-            user={user}
-            messages={messages}
-            messageInput={messageInput}
-            setMessageInput={setMessageInput}
-            sendMessage={sendMessage}
-            messagesEndRef={messagesEndRef}
-            formatTime={formatTime}
-            startCall={startCall}
-            onBack={() => setShowMobileSidebar(true)}
-          />
+          contactDetailsUser ? (
+            <ContactDetails
+              user={contactDetailsUser}
+              onBack={() => setContactDetailsUser(null)}
+              onCall={(u, type) => { setContactDetailsUser(null); startCall(u.id, type); }}
+              onUnfriend={(u) => {
+                socket.emit('unfriend', { to: u.id });
+                setContactDetailsUser(null);
+                if (chatUser && chatUser.id === u.id) {
+                  setChatUser(null);
+                  setActiveView('history');
+                }
+                alert(`Removed ${u.name || u.username} from your journal.`);
+              }}
+            />
+          ) : (
+            <ChatView
+              chatUser={chatUser}
+              user={user}
+              messages={messages}
+              messageInput={messageInput}
+              setMessageInput={setMessageInput}
+              sendMessage={sendMessage}
+              messagesEndRef={messagesEndRef}
+              formatTime={formatTime}
+              startCall={startCall}
+              onBack={() => setShowMobileSidebar(true)}
+              onOpenDetails={(u) => setContactDetailsUser(u)}
+            />
+          )
         ) : (
           <HistoryView callHistory={callHistory} user={user} formatTime={formatDate} startCall={startCall} onBack={() => setShowMobileSidebar(true)} />
         )}
