@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { FiClock, FiSettings } from 'react-icons/fi';
 import LoginScreen from './components/LoginScreen';
 import SettingsView from './components/SettingsView';
 import HistoryView from './components/HistoryView';
@@ -24,6 +25,7 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [callHistory, setCallHistory] = useState([]);
   const [callError, setCallError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [activeView, setActiveView] = useState('history'); // 'history', 'chat', 'settings'
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
@@ -187,14 +189,97 @@ export default function App() {
     };
   }, []);
 
-  const handleJoin = (name) => {
-    if (!name.trim()) return;
+  useEffect(() => {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    if (savedToken && savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        socket.emit('join-app', savedToken, (socketRes) => {
+          if (socketRes && socketRes.success) {
+            setUser({ ...parsedUser, token: savedToken });
+          } else {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
+        });
+      } catch (e) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setActiveView('history');
+  };
+
+  const handleUpdateUser = async (updatedFields) => {
+    try {
+      if (!user || !user.token) return { error: 'Not authenticated' };
+
+      const res = await fetch(`${apiUrl}/api/auth/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify(updatedFields)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { error: data.error || 'Failed to update profile' };
+      }
+
+      const { token, user: newUser } = data;
+      const fullUser = { ...newUser, token };
+      setUser(fullUser);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(newUser));
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      return { error: 'Error connecting to server' };
+    }
+  };
+
+  const handleJoin = async (credentials, isRegister) => {
     setIsLoading(true);
-    socket.emit('join-app', name.trim(), (res) => {
+    try {
+      const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
+      const res = await fetch(`${apiUrl}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        setIsLoading(false);
+        return alert(data.error || 'Authentication failed');
+      }
+
+      const { token, user: loggedInUser } = data;
+      
+      socket.emit('join-app', token, (socketRes) => {
+        setIsLoading(false);
+        if (socketRes.success) {
+          setUser({ ...loggedInUser, token });
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(loggedInUser));
+        } else {
+          alert(socketRes.error);
+        }
+      });
+    } catch (err) {
+      console.error(err);
       setIsLoading(false);
-      if (res.success) setUser(name.trim());
-      else alert(res.error);
-    });
+      alert('Error connecting to server');
+    }
   };
 
   const startCall = async (targetId, type) => {
@@ -281,11 +366,12 @@ export default function App() {
   };
 
   const sendMessage = () => {
-    if (!messageInput.trim() || !chatUser) return;
+    if (!messageInput.trim() || !chatUser || !user) return;
+    const userId = user.id || user._id;
     const msgData = {
-      from: user,
+      from: userId,
       to: chatUser.id,
-      name: user,
+      name: user.username || user.name || 'Me',
       message: messageInput.trim(),
       time: new Date().toISOString()
     };
@@ -317,10 +403,12 @@ export default function App() {
   };
 
   const getLastMessage = (targetUserId) => {
-    const msgs = messages.filter(m => (m.from === user && m.to === targetUserId) || (m.from === targetUserId && m.to === user));
+    if (!user) return "Start a conversation";
+    const userId = user.id || user._id;
+    const msgs = messages.filter(m => (m.from === userId && m.to === targetUserId) || (m.from === targetUserId && m.to === userId));
     if (msgs.length === 0) return "Start a conversation";
     const last = msgs[msgs.length - 1];
-    return last.message.length > 25 ? last.message.substring(0, 25) + '...' : last.message;
+    return last.message && last.message.length > 25 ? last.message.substring(0, 25) + '...' : (last.message || '');
   };
 
   // --- Views ---
@@ -343,6 +431,8 @@ export default function App() {
             <input 
               className="w-full bg-transparent p-2 pb-3 text-sm text-[#2D2C2A] outline-none placeholder-gray-500/70"
               placeholder="Search contacts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <svg viewBox="0 0 300 10" preserveAspectRatio="none" className="absolute bottom-0 left-0 w-full h-[6px] pointer-events-none text-[#2D2C2A]">
               <path d="M 0 5 Q 75 3 150 6 T 300 4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
@@ -359,7 +449,7 @@ export default function App() {
             className={`flex items-center gap-4 p-4 sketch-divider cursor-pointer transition-colors hover:bg-black/5 ${activeView === 'history' && !isCallActive ? 'bg-black/5' : ''}`}
           >
             <div className="w-12 h-12 sketch-circle flex items-center justify-center bg-[#F5F2EB]">
-              🕒
+              <FiClock className="w-5 h-5 text-[#2D2C2A]" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold">Call Logs</h3>
@@ -367,7 +457,10 @@ export default function App() {
             </div>
           </div>
 
-          {onlineUsers.filter(u => u.name !== user).map(u => (
+          {onlineUsers
+            .filter(u => u.id !== (user?.id || user?._id))
+            .filter(u => !searchQuery.trim() || u.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+            .map(u => (
             <div 
               key={u.id}
               onClick={() => { setActiveView('chat'); setChatUser(u); setShowMobileSidebar(false); }}
@@ -393,22 +486,23 @@ export default function App() {
         <div className="p-4 sketch-divider border-t-2 border-black/10 bg-black/5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sketch-circle bg-black text-white flex items-center justify-center font-bold">
-              {user.charAt(0).toUpperCase()}
+              {(user?.username || user?.name || user?.email || 'U').charAt(0).toUpperCase()}
             </div>
             <span className="font-bold">Your Journal</span>
           </div>
           <button 
             onClick={() => { setActiveView(activeView === 'settings' ? 'history' : 'settings'); setShowMobileSidebar(false); }}
             className="w-8 h-8 sketch-circle flex items-center justify-center hover:bg-black/10 transition-colors"
+            title="Settings"
           >
-            ⚙
+            <FiSettings className="w-4 h-4 text-[#2D2C2A]" />
           </button>
         </div>
       </div>
 
       {/* MAIN VIEW */}
       <div className={`${!showMobileSidebar ? 'flex' : 'hidden md:flex'} flex-1 flex-col relative z-10 overflow-hidden bg-white/30`}>
-        {isCallActive ? (
+        {!isCallActive ? (
           <CallScreen 
             incomingCall={incomingCall} 
             inCall={inCall} 
@@ -427,7 +521,7 @@ export default function App() {
             onBack={() => setShowMobileSidebar(true)}
           />
         ) : activeView === 'settings' ? (
-          <SettingsView user={user} onBack={() => setShowMobileSidebar(true)} />
+          <SettingsView user={user} onBack={() => setShowMobileSidebar(true)} onUpdateUser={handleUpdateUser} onLogout={handleLogout} />
         ) : activeView === 'chat' && chatUser ? (
           <ChatView 
             chatUser={chatUser}

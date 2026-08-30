@@ -1,17 +1,8 @@
 import React from 'react';
+import { FiPhone, FiVideo, FiArrowLeft, FiMoreVertical } from 'react-icons/fi';
 
-const PhoneIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-70">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-  </svg>
-);
-
-const VideoIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-70">
-    <polygon points="23 7 16 12 23 17 23 7"></polygon>
-    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-  </svg>
-);
+const PhoneIcon = () => <FiPhone className="w-3.5 h-3.5 opacity-70" />;
+const VideoIcon = () => <FiVideo className="w-3.5 h-3.5 opacity-70" />;
 
 export default function HistoryView({ callHistory, user, startCall, onBack }) {
   
@@ -52,21 +43,15 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
             onClick={onBack}
             className="md:hidden w-10 h-10 flex items-center justify-center hover:bg-black/10 transition-colors"
             style={{ border: '1.5px solid #2D2C2A', borderRadius: "50%" }}
+            title="Back"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
+            <FiArrowLeft className="w-5 h-5 text-[#2D2C2A]" />
           </button>
           <h2 className="text-xl md:text-3xl font-bold">call History Log</h2>
         </div>
         <div className="w-10 h-10 flex items-center justify-center cursor-pointer hover:bg-black/10 transition-colors relative"
              style={{ border: '1.5px solid #2D2C2A', borderRadius: "60% 40% 50% 50% / 40% 50% 60% 40%" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="5" r="1"></circle>
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="12" cy="19" r="1"></circle>
-          </svg>
+          <FiMoreVertical className="w-5 h-5 text-[#2D2C2A]" />
         </div>
       </div>
 
@@ -90,8 +75,10 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
             
             <div className="space-y-10 relative z-10">
               {calls.map((c, i) => {
-                const isIncoming = c.to === user;
-                const peerName = isIncoming ? c.from : c.to;
+                const currentUserId = user?.id || user?._id;
+                const isIncoming = c.to === currentUserId;
+                const peerId = isIncoming ? c.from : c.to;
+                const peerName = c.peerName || 'Unknown User';
                 const isMissed = c.status === 'missed' || c.status === 'rejected';
                 
                 return (
@@ -115,7 +102,7 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
                         {formatJustTime(c.time)}
                       </span>
                       <button 
-                        onClick={() => startCall(peerName, c.type)}
+                        onClick={() => startCall(peerId, c.type)}
                         className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-xl hover:bg-black hover:text-[#F4EFE6] transition-colors md:opacity-0 md:group-hover:opacity-100"
                         style={{ border: '1.5px solid #2D2C2A', borderRadius: "50% 40% 60% 40% / 40% 50% 40% 60%" }}
                         title="Call back"
