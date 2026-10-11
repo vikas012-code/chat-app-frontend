@@ -5,12 +5,12 @@ const ContactDetails = ({ user, onBack, onUnfriend, onCall }) => {
   if (!user) return null;
 
   const initials = (user.name || user.username || 'U').charAt(0).toUpperCase();
-  const statusLabel = user.status === 'online' ? 'pondering...' : 'away';
+  const statusLabel = user.status === 'online' ? 'Online' : 'Away';
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F4EFE6] text-[#2D2C2A] font-['Kalam'] relative z-10 overflow-hidden">
       {/* Top header bar */}
-      <div className="flex items-center justify-between px-4 md:px-10 py-4 md:py-6 border-b border-black/10 bg-[#F5F2EB]/80 backdrop-blur-sm sticky top-0 z-20">
+      <div className="flex items-center justify-between px-4 md:px-10 py-4 md:py-6 sketch-hborder bg-[#F5F2EB]/80 backdrop-blur-sm shrink-0 relative z-20">
         <button
           onClick={onBack}
           className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-black/5 transition-colors"
@@ -19,12 +19,14 @@ const ContactDetails = ({ user, onBack, onUnfriend, onCall }) => {
         >
           <FiArrowLeft className="w-5 h-5 text-[#2D2C2A]" />
         </button>
-        <h2 className="text-xl md:text-2xl font-bold tracking-wide">Scribe Details</h2>
+        <h2 className="text-xl md:text-2xl font-bold tracking-wide">Contact Details</h2>
         <div className="w-10 md:w-12" />
       </div>
 
-      {/* Profile card */}
-      <div className="flex flex-col items-center py-8 md:py-12 px-6">
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Profile card */}
+        <div className="flex flex-col items-center py-8 md:py-12 px-6">
         <div className="relative mb-6">
           <div
             className="w-40 h-40 md:w-56 md:h-56 flex items-center justify-center text-6xl md:text-8xl font-bold bg-[#F5F2EB]"
@@ -66,8 +68,8 @@ const ContactDetails = ({ user, onBack, onUnfriend, onCall }) => {
 
       {/* Details list */}
       <div className="mx-4 md:mx-10 mb-6">
-        <div className="bg-[#F5F2EB] border-2 border-black/10 divide-y divide-black/10"
-             style={{ border: '1.5px solid #2D2C2A', borderRadius: "4px 3px 6px 2px" }}>
+        <div className="bg-[#F5F2EB] sketch-border divide-y divide-black/10"
+             style={{ borderRadius: "4px 3px 6px 2px" }}>
           <div className="flex items-center gap-4 px-6 py-4">
             <FiUser className="w-6 h-6 text-[#2D2C2A] opacity-70" />
             <div>
@@ -78,7 +80,7 @@ const ContactDetails = ({ user, onBack, onUnfriend, onCall }) => {
           <div className="flex items-center gap-4 px-6 py-4">
             <FiHash className="w-6 h-6 text-[#2D2C2A] opacity-70" />
             <div>
-              <p className="text-sm opacity-60 uppercase tracking-widest">Scribe ID</p>
+              <p className="text-sm opacity-60 uppercase tracking-widest">User ID</p>
               <p className="text-xl font-bold">{user.id || user._id || '—'}</p>
             </div>
           </div>
@@ -91,9 +93,10 @@ const ContactDetails = ({ user, onBack, onUnfriend, onCall }) => {
           </div>
         </div>
       </div>
+      </div>
 
-      {/* Unfriend action */}
-      <div className="mt-auto px-4 md:px-10 pb-8 md:pb-12">
+      {/* Unfriend action — sticky bottom */}
+      <div className="shrink-0 px-4 md:px-10 py-4 md:py-6 bg-[#F4EFE6] sketch-hborder-top">
         <button
           onClick={() => {
             if (confirm(`Are you sure you want to remove ${user.name || user.username} from your journal?`)) {
@@ -104,10 +107,10 @@ const ContactDetails = ({ user, onBack, onUnfriend, onCall }) => {
           style={{ border: '2px solid #991b1b', color: '#991b1b', borderRadius: "255px 15px 225px 15px / 15px 225px 15px 255px" }}
         >
           <FiUserX className="w-6 h-6" />
-          Remove from Journal
+          Remove Contact
         </button>
         <p className="text-center text-sm opacity-50 mt-4">
-          Removing this scribe will hide their entries and end your shared parchment.
+          Removing this contact will delete your chat history with them.
         </p>
       </div>
     </div>

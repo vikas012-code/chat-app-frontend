@@ -65,7 +65,7 @@ export default function CallScreen({ incomingCall, inCall, isLoading, callError,
     const callerName = incomingCall.name || incomingCall.from || 'Unknown User';
     return (
       <div className="flex-1 flex flex-col items-center bg-[#F4EFE6] text-[#2D2C2A] font-['Kalam'] relative z-30 pt-16">
-        <h3 className="text-lg opacity-60 mb-20">Incoming Scribe...</h3>
+        <h3 className="text-lg opacity-60 mb-20">Incoming Call...</h3>
         
         <div className="relative flex items-center justify-center mb-10 w-64 h-64">
           <div className="absolute inset-[-40px] border border-black/10 rounded-full"></div>
@@ -167,7 +167,7 @@ export default function CallScreen({ incomingCall, inCall, isLoading, callError,
             
             <div className="absolute -top-4 left-4 bg-[#F4EFE6] px-4 py-1 shadow-sm -rotate-2 z-30"
                  style={{ border: '1px solid rgba(0,0,0,0.1)' }}>
-              <p className="text-sm font-bold">Me {'{Scribe}'}</p>
+              <p className="text-sm font-bold">You</p>
             </div>
 
             {(inCall || localStream) && localStream ? (

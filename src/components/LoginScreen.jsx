@@ -65,7 +65,7 @@ export default function LoginScreen({ onJoin, loading }) {
         <div className="relative w-full">
           <input
             className="w-full bg-transparent p-2 pb-3 text-center text-lg md:text-xl outline-none placeholder-gray-500/70"
-            placeholder="Secret word (Password)"
+            placeholder="Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -93,9 +93,9 @@ export default function LoginScreen({ onJoin, loading }) {
 
       <div className="mt-8 md:mt-0 md:absolute md:bottom-10 text-xs md:text-sm opacity-80 flex gap-1 items-center justify-center text-center px-4">
         {isRegister ? (
-          <>Already have a parchment? <span onClick={() => setIsRegister(false)} className="border-b-[2px] border-[#2D2C2A] cursor-pointer hover:opacity-70 transition-opacity">Read yours.</span></>
+          <>Already have an account? <span onClick={() => setIsRegister(false)} className="border-b-[2px] border-[#2D2C2A] cursor-pointer hover:opacity-70 transition-opacity">Sign in here.</span></>
         ) : (
-          <>New to the parchment? <span onClick={() => setIsRegister(true)} className="border-b-[2px] border-[#2D2C2A] cursor-pointer hover:opacity-70 transition-opacity">Write your name here.</span></>
+          <>Don't have an account? <span onClick={() => setIsRegister(true)} className="border-b-[2px] border-[#2D2C2A] cursor-pointer hover:opacity-70 transition-opacity">Create one now.</span></>
         )}
       </div>
     </div>

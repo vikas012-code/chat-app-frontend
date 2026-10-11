@@ -27,10 +27,10 @@ export default function ChatView({ chatUser, user, messages, messageInput, setMe
   const msgs = messages.filter(m => (m.from === currentUserId && m.to === chatUser.id) || (m.from === chatUser.id && m.to === currentUserId));
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-transparent relative z-10 border-l border-black/10">
+    <div className="flex-1 flex flex-col h-full bg-transparent relative z-10 sketch-vborder-left">
       
       {/* Top Header */}
-      <div className="flex justify-between items-center px-3 md:px-10 py-3 md:py-6 border-b border-black/10 bg-[#F4EFE6]/80 backdrop-blur-sm sticky top-0 z-20 shrink-0">
+      <div className="flex justify-between items-center px-3 md:px-10 py-3 md:py-6 sketch-hborder bg-[#F4EFE6]/80 backdrop-blur-sm sticky top-0 z-20 shrink-0">
         <div className="flex items-center gap-2 md:gap-6 min-w-0">
           <button
             onClick={onBack}
@@ -48,7 +48,7 @@ export default function ChatView({ chatUser, user, messages, messageInput, setMe
             <h2 className="text-lg md:text-2xl font-bold font-['Kalam'] truncate">{chatUser?.name || 'Unknown User'}</h2>
             <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-black/60">
               <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#2D2C2A]"></span>
-              <span>{chatUser?.status === 'online' ? 'pondering...' : 'Away'}</span>
+              <span>{chatUser?.status === 'online' ? 'Online' : 'Away'}</span>
             </div>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function ChatView({ chatUser, user, messages, messageInput, setMe
       
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-10 space-y-3 md:space-y-8 min-h-0">
-        {msgs.length === 0 && <p className="text-center opacity-50 mt-20 text-base md:text-xl font-['Kalam']">The parchment is blank. Write something...</p>}
+        {msgs.length === 0 && <p className="text-center opacity-50 mt-20 text-base md:text-xl font-['Kalam']">No messages yet. Start the conversation...</p>}
         {msgs.map((m, i) => {
           const isMe = m.from === currentUserId;
           return (
@@ -90,7 +90,7 @@ export default function ChatView({ chatUser, user, messages, messageInput, setMe
       </div>
 
       {/* Bottom Input Area */}
-      <div className="px-3 md:px-10 py-3 md:py-6 border-t border-black/10 bg-transparent flex gap-2 md:gap-6 items-center shrink-0">
+      <div className="px-3 md:px-10 py-3 md:py-6 sketch-hborder-top bg-transparent flex gap-2 md:gap-6 items-center shrink-0">
         <button className="hidden md:flex w-12 h-12 items-center justify-center hover:bg-black/5 transition-colors"
                 style={{ border: '1.5px solid #2D2C2A', borderRadius: "50% 40% 60% 40% / 40% 50% 40% 60%" }}>
           <FiPlus className="w-6 h-6 text-[#2D2C2A]" />
@@ -98,7 +98,7 @@ export default function ChatView({ chatUser, user, messages, messageInput, setMe
 
         <input
           className="flex-1 bg-transparent p-2 text-base md:text-2xl font-['Kalam'] outline-none placeholder-black/50 min-w-0"
-          placeholder="Scribble a message..."
+          placeholder="Type a message..."
           value={messageInput}
           onChange={e => setMessageInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage()}

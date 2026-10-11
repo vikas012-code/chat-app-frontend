@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { FiClock, FiSettings } from 'react-icons/fi';
+import { FiClock, FiSettings, FiUserPlus, FiBell } from 'react-icons/fi';
 import LoginScreen from './components/LoginScreen';
 import SettingsView from './components/SettingsView';
 import HistoryView from './components/HistoryView';
 import ChatView from './components/ChatView';
 import ContactDetails from './components/ContactDetails';
 import CallScreen from './components/CallScreen';
+import AddFriend from './components/AddFriend';
+import FriendRequests from './components/FriendRequests';
+import Toast from './components/Toast';
 
 const apiUrl = import.meta.env.VITE_API_URL || `https://${window.location.hostname}:5000`;
 const socket = io(apiUrl);
@@ -15,7 +18,7 @@ const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [onlineUsers, setOnlineUsers] = useState([]); 
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const [incomingCall, setIncomingCall] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [inCall, setInCall] = useState(false);
@@ -27,7 +30,11 @@ export default function App() {
   const [callHistory, setCallHistory] = useState([]);
   const [callError, setCallError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [friendRequests, setFriendRequests] = useState([]);
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [showFriendRequests, setShowFriendRequests] = useState(false);
+  const [toast, setToast] = useState(null);
+
   const [activeView, setActiveView] = useState('history'); // 'history', 'chat', 'settings'
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
   const [contactDetailsUser, setContactDetailsUser] = useState(null); // user object for ContactDetails
@@ -165,9 +172,36 @@ export default function App() {
       if (data.reason === 'declined') msg = 'Call was declined.';
       else if (data.reason === 'timeout') msg = 'No answer from the user.';
       else if (data.reason === 'media_error') msg = 'User was unable to connect media devices.';
-      
+      else if (data.reason === 'not_friends') msg = 'You must be friends to call this user.';
+
       setCallError(msg);
       cleanupRef.current();
+    };
+
+    // Friend request socket events
+    const onFriendRequestsSync = (requests) => {
+      setFriendRequests(requests);
+    };
+
+    const onFriendRequestReceived = (data) => {
+      setFriendRequests(prev => {
+        // Avoid duplicates
+        if (prev.find(r => r.requestId === data.requestId)) return prev;
+        return [...prev, data];
+      });
+      setToast({ message: `${data.username} sent you a friend request!`, type: 'info' });
+    };
+
+    const onFriendRequestAccepted = (data) => {
+      setToast({ message: `${data.username} accepted your friend request!`, type: 'success' });
+    };
+
+    const onFriendRequestRejected = (data) => {
+      setToast({ message: `${data.username} declined your friend request.`, type: 'info' });
+    };
+
+    const onFriendRemoved = (data) => {
+      setToast({ message: `${data.username} removed you from their friends.`, type: 'info' });
     };
 
     socket.on('user-list', onUserList);
@@ -178,6 +212,11 @@ export default function App() {
     socket.on('receive-message', onReceiveMessage);
     socket.on('sync-history', onSyncHistory);
     socket.on('call-rejected', onCallRejected);
+    socket.on('friend-requests-sync', onFriendRequestsSync);
+    socket.on('friend-request-received', onFriendRequestReceived);
+    socket.on('friend-request-accepted', onFriendRequestAccepted);
+    socket.on('friend-request-rejected', onFriendRequestRejected);
+    socket.on('friend-removed', onFriendRemoved);
 
     return () => {
       socket.off('user-list', onUserList);
@@ -188,6 +227,11 @@ export default function App() {
       socket.off('receive-message', onReceiveMessage);
       socket.off('sync-history', onSyncHistory);
       socket.off('call-rejected', onCallRejected);
+      socket.off('friend-requests-sync', onFriendRequestsSync);
+      socket.off('friend-request-received', onFriendRequestReceived);
+      socket.off('friend-request-accepted', onFriendRequestAccepted);
+      socket.off('friend-request-rejected', onFriendRequestRejected);
+      socket.off('friend-removed', onFriendRemoved);
     };
   }, []);
 
@@ -378,9 +422,24 @@ export default function App() {
       time: new Date().toISOString()
     };
     socket.emit('send-message', { to: chatUser.id, message: messageInput.trim() });
-    
+
     setMessages(prev => [...prev, msgData]);
     setMessageInput('');
+  };
+
+  // Friend request handlers
+  const handleFriendRequestSent = (data) => {
+    setToast({ message: `Friend request sent to ${data.username}!`, type: 'success' });
+  };
+
+  const handleRequestAccepted = (data) => {
+    setFriendRequests(prev => prev.filter(r => r.requestId !== data.requestId));
+    setToast({ message: `You are now friends with ${data.username}!`, type: 'success' });
+  };
+
+  const handleRequestRejected = (data) => {
+    setFriendRequests(prev => prev.filter(r => r.requestId !== data.requestId));
+    setToast({ message: `Rejected friend request from ${data.username}`, type: 'info' });
   };
 
   const formatTime = (isoString) => {
@@ -424,11 +483,46 @@ export default function App() {
     <div className="h-screen w-full flex overflow-hidden text-[#2D2C2A] bg-[#F5F2EB]">
       
       {/* SIDEBAR */}
-      <div className={`${showMobileSidebar ? 'flex w-full md:w-80' : 'hidden md:flex md:w-80'} shrink-0 border-r-0 md:border-r-2 border-black/10 flex-col relative z-20 shadow-none md:shadow-[4px_0_15px_rgba(0,0,0,0.02)] bg-[#F5F2EB]`}>
+      <div className={`${showMobileSidebar ? 'flex w-full md:w-80' : 'hidden md:flex md:w-80'} shrink-0 md:sketch-vborder flex-col relative z-20 shadow-none md:shadow-[4px_0_15px_rgba(0,0,0,0.02)] bg-[#F5F2EB]`}>
 
         {/* Header */}
         <div className="p-4 md:p-6 pb-3 md:pb-4 sketch-divider">
-          <h1 className="text-xl md:text-3xl font-bold tracking-widest mb-2 md:mb-4">SCRIBE CHAT</h1>
+          <div className="flex items-center justify-between mb-2 md:mb-4">
+            <h1 className="text-xl md:text-3xl font-bold tracking-widest">Chat App</h1>
+            <div className="flex gap-2">
+              {/* Friend Requests Button */}
+              <button
+                onClick={() => setShowFriendRequests(true)}
+                className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:bg-black/10 transition-colors"
+                style={{
+                  border: '1.5px solid #2D2C2A',
+                  borderRadius: '50% 40% 60% 40% / 40% 50% 40% 60%'
+                }}
+                title="Friend Requests"
+              >
+                <FiBell className="w-4 h-4 md:w-5 md:h-5 text-[#2D2C2A]" />
+                {friendRequests.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#991b1b] text-white text-[10px] md:text-xs font-bold flex items-center justify-center rounded-full border border-[#F5F2EB]">
+                    {friendRequests.length > 9 ? '9+' : friendRequests.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Add Friend Button */}
+              <button
+                onClick={() => setShowAddFriend(true)}
+                className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:bg-black/10 transition-colors"
+                style={{
+                  border: '1.5px solid #2D2C2A',
+                  borderRadius: '50% 60% 40% 50% / 50% 40% 60% 40%'
+                }}
+                title="Add Friend"
+              >
+                <FiUserPlus className="w-4 h-4 md:w-5 md:h-5 text-[#2D2C2A]" />
+              </button>
+            </div>
+          </div>
+
           <div className="relative w-full">
             <input
               className="w-full bg-transparent p-2 pb-3 text-sm text-[#2D2C2A] outline-none placeholder-gray-500/70"
@@ -454,8 +548,8 @@ export default function App() {
               <FiClock className="w-4 h-4 md:w-5 md:h-5 text-[#2D2C2A]" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-sm md:text-base">Call Logs</h3>
-              <p className="text-xs md:text-sm text-black/50">Recent connections</p>
+              <h3 className="font-bold text-sm md:text-base">Call History</h3>
+              <p className="text-xs md:text-sm text-black/50">Recent calls</p>
             </div>
           </div>
 
@@ -490,7 +584,7 @@ export default function App() {
             <div className="w-8 h-8 md:w-10 md:h-10 sketch-circle bg-black text-white flex items-center justify-center text-sm md:text-base font-bold">
               {(user?.username || user?.name || user?.email || 'U').charAt(0).toUpperCase()}
             </div>
-            <span className="font-bold text-sm md:text-base">Your Journal</span>
+            <span className="font-bold text-sm md:text-base">Your Profile</span>
           </div>
           <button
             onClick={() => { setActiveView(activeView === 'settings' ? 'history' : 'settings'); setShowMobileSidebar(false); }}
@@ -559,6 +653,35 @@ export default function App() {
           <HistoryView callHistory={callHistory} user={user} formatTime={formatDate} startCall={startCall} onBack={() => setShowMobileSidebar(true)} />
         )}
       </div>
+
+      {/* Add Friend Modal */}
+      {showAddFriend && (
+        <AddFriend
+          user={user}
+          onClose={() => setShowAddFriend(false)}
+          onFriendRequestSent={handleFriendRequestSent}
+        />
+      )}
+
+      {/* Friend Requests Modal */}
+      {showFriendRequests && (
+        <FriendRequests
+          user={user}
+          requests={friendRequests}
+          onClose={() => setShowFriendRequests(false)}
+          onRequestAccepted={handleRequestAccepted}
+          onRequestRejected={handleRequestRejected}
+        />
+      )}
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
     </div>
   );

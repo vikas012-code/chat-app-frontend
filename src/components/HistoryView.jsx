@@ -37,7 +37,7 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
   return (
     <div className="flex-1 flex flex-col overflow-y-auto custom-scrollbar bg-transparent h-full">
 
-      <div className="flex justify-between items-center px-4 md:px-10 py-4 md:py-6 sticky top-0 z-20 border-b border-black/10 backdrop-blur-sm bg-[#F4EFE6]/80 shrink-0">
+      <div className="flex justify-between items-center px-4 md:px-10 py-4 md:py-6 sticky top-0 z-20 sketch-hborder backdrop-blur-sm bg-[#F4EFE6]/80 shrink-0">
         <div className="flex items-center gap-4">
           <button 
             onClick={onBack}
@@ -47,7 +47,7 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
           >
             <FiArrowLeft className="w-5 h-5 text-[#2D2C2A]" />
           </button>
-          <h2 className="text-xl md:text-3xl font-bold">call History Log</h2>
+          <h2 className="text-xl md:text-3xl font-bold">Call History</h2>
         </div>
         <div className="w-10 h-10 flex items-center justify-center cursor-pointer hover:bg-black/10 transition-colors relative"
              style={{ border: '1.5px solid #2D2C2A', borderRadius: "60% 40% 50% 50% / 40% 50% 60% 40%" }}>
@@ -58,7 +58,7 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
       <div className="p-4 md:p-10 max-w-4xl w-full mx-auto relative pb-20 flex-1 overflow-y-auto">
 
         {callHistory.length === 0 && (
-          <p className="text-center opacity-50 mt-20 text-lg md:text-xl">No previous logs found.</p>
+          <p className="text-center opacity-50 mt-20 text-lg md:text-xl">No call history yet.</p>
         )}
 
         {Object.entries(groupedCalls).map(([date, calls], groupIdx) => (
@@ -70,7 +70,7 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
             {/* Date Header */}
             <div className="flex items-center gap-2 md:gap-4 mb-4 md:mb-8 relative z-10">
               <h3 className="text-base md:text-xl text-black/70 shrink-0">{date}</h3>
-              <div className="flex-1 border-b-2 border-dashed border-black/10 mt-2"></div>
+              <div className="flex-1 sketch-dashed-divider mt-2"></div>
             </div>
 
             <div className="space-y-6 md:space-y-10 relative z-10">
@@ -93,7 +93,7 @@ export default function HistoryView({ callHistory, user, startCall, onBack }) {
                       <h3 className="text-base md:text-xl font-bold truncate">{peerName}</h3>
                       <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-black/60 mt-1">
                         {c.type === 'video' ? <VideoIcon /> : <PhoneIcon />}
-                        <span className="truncate">{c.type === 'video' ? 'video call' : 'voice call'} • {isMissed ? 'Missed' : isIncoming ? 'Incoming' : 'Outgoing'}</span>
+                        <span className="truncate">{c.type === 'video' ? 'Video' : 'Voice'} • {isMissed ? 'Missed' : isIncoming ? 'Incoming' : 'Outgoing'}</span>
                       </div>
                     </div>
 

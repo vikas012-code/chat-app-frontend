@@ -9,7 +9,7 @@ const INK_COLORS = [
 ];
 
 export default function SettingsView({ user, onBack, onUpdateUser, onLogout }) {
-  const initialUsername = typeof user === 'string' ? user : (user?.username || user?.name || user?.email || 'The Wanderer');
+  const initialUsername = typeof user === 'string' ? user : (user?.username || user?.name || user?.email || 'Your Name');
   const [username, setUsername] = useState(initialUsername);
   const [password, setPassword] = useState('');
   const [inkColor, setInkColor] = useState(user?.inkColor || '#2D2C2A');
@@ -27,11 +27,11 @@ export default function SettingsView({ user, onBack, onUpdateUser, onLogout }) {
         if (result && result.error) {
           setSaveMessage({ type: 'error', text: result.error });
         } else {
-          setSaveMessage({ type: 'success', text: 'Saved in ink!' });
+          setSaveMessage({ type: 'success', text: 'Settings saved!' });
           setPassword('');
         }
       } else {
-        setSaveMessage({ type: 'success', text: 'Saved in ink!' });
+        setSaveMessage({ type: 'success', text: 'Settings saved!' });
       }
     } catch (err) {
       setSaveMessage({ type: 'error', text: 'Failed to save changes.' });
@@ -55,9 +55,9 @@ export default function SettingsView({ user, onBack, onUpdateUser, onLogout }) {
           >
             <FiArrowLeft className="w-4 h-4 text-[#2D2C2A]" />
           </button>
-          <h2 className="text-lg md:text-3xl font-bold tracking-wide truncate">Journal Settings</h2>
+          <h2 className="text-lg md:text-3xl font-bold tracking-wide truncate">Settings</h2>
         </div>
-        <span className="text-xs md:text-sm opacity-60 hidden md:block">Personalize your parchment</span>
+        <span className="text-xs md:text-sm opacity-60 hidden md:block">Customize your profile</span>
       </div>
       
       {/* Main Scrollable Content Area */}
@@ -76,13 +76,13 @@ export default function SettingsView({ user, onBack, onUpdateUser, onLogout }) {
           
           {/* Journal Name Field */}
           <div className="space-y-1 md:space-y-2">
-            <label className="text-sm md:text-lg font-bold block text-[#2D2C2A]/80">Journal Name</label>
+            <label className="text-sm md:text-lg font-bold block text-[#2D2C2A]/80">Display Name</label>
             <div className="relative w-full">
               <input
                 className="w-full bg-transparent p-2 md:p-3 text-lg md:text-2xl outline-none font-bold text-[#2D2C2A]"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="The Wanderer"
+                placeholder="Your Name"
               />
               <svg viewBox="0 0 300 10" preserveAspectRatio="none" className="absolute bottom-0 left-0 w-full h-2 md:h-2.5 pointer-events-none text-[#2D2C2A]">
                 <path d="M 0 5 Q 75 2 150 6 T 300 3" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
@@ -93,14 +93,14 @@ export default function SettingsView({ user, onBack, onUpdateUser, onLogout }) {
 
           {/* Secret Cipher (Password) Field */}
           <div className="space-y-1 md:space-y-2">
-            <label className="text-sm md:text-lg font-bold block text-[#2D2C2A]/80">Secret cipher (Password)</label>
+            <label className="text-sm md:text-lg font-bold block text-[#2D2C2A]/80">New Password</label>
             <div className="relative w-full">
               <input
                 type="password"
                 className="w-full bg-transparent p-2 md:p-3 text-lg md:text-2xl outline-none font-bold tracking-widest text-[#2D2C2A]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Leave blank to keep unchanged"
+                placeholder="Leave empty to keep current"
               />
               <svg viewBox="0 0 300 10" preserveAspectRatio="none" className="absolute bottom-0 left-0 w-full h-2 md:h-2.5 pointer-events-none text-[#2D2C2A]">
                 <path d="M 2 4 Q 80 6 150 3 T 298 5" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
@@ -110,7 +110,7 @@ export default function SettingsView({ user, onBack, onUpdateUser, onLogout }) {
 
           {/* Ink Color Selection */}
           <div className="space-y-2 md:space-y-3">
-            <label className="text-sm md:text-lg font-bold block text-[#2D2C2A]/80">Ink color</label>
+            <label className="text-sm md:text-lg font-bold block text-[#2D2C2A]/80">Accent Color</label>
             <div className="flex items-center gap-3 md:gap-5">
               {INK_COLORS.map((c) => {
                 const isSelected = inkColor === c.hex;
@@ -152,23 +152,23 @@ export default function SettingsView({ user, onBack, onUpdateUser, onLogout }) {
                 boxShadow: '2px 3px 6px rgba(0,0,0,0.1)'
               }}
             >
-              {isSaving ? 'Inking...' : 'SAVE JOURNAL'}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
 
             {/* Handwritten Quote Footer */}
             <p className="mt-4 md:mt-8 text-center text-xs md:text-base italic text-[#2D2C2A]/70 px-4">
-              "words written in ink cannot be easily erased."
+              "Your changes are saved automatically."
             </p>
           </div>
 
           {/* Logout Option */}
           {onLogout && (
-            <div className="pt-4 md:pt-6 border-t border-black/10">
+            <div className="pt-4 md:pt-6 sketch-hborder-top">
               <button
                 onClick={onLogout}
                 className="w-full py-2 md:py-3 px-4 font-bold text-red-800 hover:bg-red-50 transition-colors sketch-border uppercase tracking-wider text-center text-sm md:text-base"
               >
-                Log Out of Journal
+                Log Out
               </button>
             </div>
           )}
